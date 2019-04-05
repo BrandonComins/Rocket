@@ -1,34 +1,43 @@
+#include <SparkFunMPL3115A2.h>
+#include <Wire.h>
 #include "Arduino.h"
-#include "I2Cdev.h"
-#include "SFE_BMP180.h"
 #include "SoftwareSerial.h"
 #include "SD.h"
 
 
 
-// Pin Definitions
   #define SDFILE_PIN_CS 10
 
 
-// Global variables and defines
-  
-  SFE_BMP180 altimeter;
+  //altimeter  
+  MPL3115A2 altimeter;
+  float pressure;
+  float temperature;
+  int ipress;
+  int itemp;
 
+  char pastring[10];
+  char tmpstring[10];
+
+  //Accelerometer
   int scale = 3;
-boolean micro_is_5V = true;
+  boolean micro_is_5V = true;
 
+  //SDd
   File sdFile;
-
-  double altimeterAltitude = altimeter.altitude();
-  double altimeterPressure = altimeter.getPressure();
-  double altimeterTempC = altimeter.getTemperatureC();
 
 void setup() 
 {
+    Wire.begin();        // Join i2c bus
+  
     Serial.begin(9600);
- 
-    altimeter.begin();
-    
+
+    altimeter.begin(); // Get sensor online
+    altimeter.setModeBarometer(); // Measure pressure in Pascals from 20 to 110 kPa
+    altimeter.setOversampleRate(7); // Set Oversample to the recommended 128
+    altimeter.enableEventFlags(); // Enable all three pressure and temp event flags 
+
+         
   
     pinMode(SDFILE_PIN_CS, OUTPUT);
     // Check if the card is present and can be initialized
@@ -41,7 +50,7 @@ void setup()
 }
 
 void loop(){
-  //constantly declaring the value for the pins
+  //constantly declaring the values for Accelerometer
     int rawX = analogRead(A0);
     int rawY = analogRead(A1);
     int rawZ = analogRead(A2); 
@@ -52,7 +61,6 @@ void loop(){
    sdFile = SD.open("datalog.txt", FILE_WRITE);
 
     if (sdFile) {
-      writeAltimeter();
         
         if (micro_is_5V) // Microcontroller runs off 5V
   {
@@ -77,18 +85,35 @@ void loop(){
       sdFile.print(F("Y: ")); sdFile.print(scaledY); sdFile.println(F(" g"));
       sdFile.print(F("Z: ")); sdFile.print(scaledZ); sdFile.println(F(" g"));
       sdFile.println();
+  
+      delay(500);
+        
+  //Altimeter
+      pressure = altimeter.readPressure();
+      ipress = pressure;
+      sprintf(pastring, "%3d", ipress);
+
+      sdFile.print(F("Pressure(Pa): "));
+      sdFile.print(pastring);
+    
+      sdFile.println();
+        
+      temperature = altimeter.readTempF();
+      itemp = temperature;
+      sprintf(tmpstring, "%3d", itemp);  
+
+      sdFile.print(F(" Temp(f): "));
+      sdFile.print(temperature, 2);
+
+      sdFile.println();
+
+      delay(500);
+      
     }else{
         // if the file didn't open, print an error
         Serial.println(F("error opening file."));   
     }
 }
-
-
-    void writeAltimeter(){
-      sdFile.println(altimeterAltitude,1); sdFile.print(F(" [m]"));
-      sdFile.println(altimeterPressure,1); sdFile.print(F(" [hPa]"));
-      sdFile.println(altimeterTempC,1); sdFile.println(F(" [°C]"));
-    }
 
     float mapf(float x, float in_min, float in_max, float out_min, float out_max)
   {
