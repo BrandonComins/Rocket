@@ -1,12 +1,9 @@
+#include <SD.h>
+#include <SPI.h>
 #include <SparkFunMPL3115A2.h>
 #include <Wire.h>
 #include "Arduino.h"
 #include "SoftwareSerial.h"
-#include "SD.h"
-
-
-
-  #define Serial_PIN_CS 10
 
 
   //altimeter  
@@ -26,46 +23,41 @@
   int scale = 3;
   boolean micro_is_5V = true;
 
-  //SDd
-  File sdFile;
+  //SD Card Reader
+  File file;
+  char fileName[] = "data.txt"; // SD library only supports up to 8.3 names
+  const uint8_t chipSelect = 8;
+
+  bool alreadyBegan = false;  // SD.begin() misbehaves if not first call
+
+
 
 void setup() 
 {
     Wire.begin();        // Join i2c bus
-  
-    Serial.begin(9600);
-
+    
+    file = SD.open(fileName);
+    SD.begin(chipSelect);
     altimeter.begin(); // Get sensor online
     altimeter.setModeAltimeter(); // Measure pressure in Pascals from 20 to 110 kPa
     altimeter.setOversampleRate(7); // Set Oversample to the recommended 128
     altimeter.enableEventFlags(); // Enable all three pressure and temp event flags 
-//    altimeter.setModeActive(); //starts taking measurements!
-
-         
-  
-//    pinMode(Serial_PIN_CS, OUTPUT);
-    // Check if the card is present and can be initialized
-//    if (!SD.begin()) {
-//        Serial.println(F("Card failed, or not present"));
-//        while(1);
-//    }
-//    Serial.println(F("card initialized."));
+    //altimeter.setModeActive(); //starts taking measurements!
     
+    //If the data file doesn't already exist, just make sure to create it.
+    file = SD.open(fileName, FILE_WRITE);
+    file.close();
 }
 
 void loop(){
+
+  file = SD.open(fileName, FILE_WRITE);
   //constantly declaring the values for Accelerometer
     int rawX = analogRead(A0);
     int rawY = analogRead(A1);
     int rawZ = analogRead(A2); 
     float scaledX, scaledY, scaledZ;
      
-  
-  
-   sdFile = SD.open("datalog.txt", FILE_WRITE);
-
-//    if (sdFile) {
-        
         if (micro_is_5V) // Microcontroller runs off 5V
   {
     scaledX = mapf(rawX, 0, 675, -scale, scale); // 3.3/5 * 1023 =~ 675
@@ -78,18 +70,18 @@ void loop(){
     scaledY = mapf(rawY, 0, 1023, -scale, scale);
     scaledZ = mapf(rawZ, 0, 1023, -scale, scale);
   }
-      // Print out raw X,Y,Z accelerometer readings
-      Serial.print(F("X: ")); Serial.println(rawX);
-      Serial.print(F("Y: ")); Serial.println(rawY);
-      Serial.print(F("Z: ")); Serial.println(rawZ);
-      Serial.println();
+
+     // Print out raw X,Y,Z accelerometer readings
+      file.print(F("X: ")); file.println(rawX);
+      file.print(F("Y: ")); file.println(rawY);
+      file.print(F("Z: ")); file.println(rawZ);
+      file.println();
   
   // Print out scaled X,Y,Z accelerometer readings
-      Serial.print(F("X: ")); Serial.print(scaledX); Serial.println(F(" g"));
-      Serial.print(F("Y: ")); Serial.print(scaledY); Serial.println(F(" g"));
-      Serial.print(F("Z: ")); Serial.print(scaledZ); Serial.println(F(" g"));
-      Serial.println();
-  
+      file.print(F("X: ")); file.print(scaledX); file.println(F(" g"));
+      file.print(F("Y: ")); file.print(scaledY); file.println(F(" g"));
+      file.print(F("Z: ")); file.print(scaledZ); file.println(F(" g"));
+      file.println();
       delay(500);
         
   //Altimeter
@@ -99,7 +91,7 @@ void loop(){
       sprintf(pastring, "%3d", ipress);
     
      
-      Serial.println();
+      file.println();
 
       altitude = altimeter.readAltitude(); //returns a float with meters above sea level. Ex: 1638.94
       alt = altitude;
@@ -107,44 +99,32 @@ void loop(){
       
       sprintf(pastring, "%3d", alt);
 
-       Serial.print(F("Altitude: "));
-       Serial.print(alt);
+      file.print(F("Altitude: "));
+      file.print(alt);
 
-     Serial.println();
+      file.println();
 
-      Serial.print(F("Pressure(Pa): "));
-      Serial.print(pastring);
+      file.print(F("Pressure(Pa): "));
+      file.print(pastring);
     
-      Serial.println();
+      file.println();
         
       temperature = altimeter.readTempF();
       itemp = temperature;
       sprintf(tmpstring, "%3d", itemp);  
 
-      Serial.print(F(" Temp(f): "));
-      Serial.print(temperature, 2);
+      file.print(F(" Temp(f): "));
+      file.print(temperature, 2);
     
 
-      Serial.println();
-
+      file.println();
+      file.close();
       delay(500);
-      
-//    }else{
-        // if the file didn't open, print an error
-        Serial.println(F("error opening file."));   
-//    }
-}
+          }
 
     float mapf(float x, float in_min, float in_max, float out_min, float out_max)
   {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
   }
-
-
-
- 
-
-    
-
 
 
