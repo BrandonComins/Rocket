@@ -11,6 +11,8 @@
   float pressure;
   float temperature;
   float altitude;
+  float currentAltitude;
+  float previousAltitude;
   int ipress;
   int itemp;
   int temp;
@@ -34,6 +36,7 @@
 
 void setup() 
 {
+    Serial.begin(9600);
     Wire.begin();        // Join i2c bus
     
     file = SD.open(fileName);
@@ -50,6 +53,7 @@ void setup()
 }
 
 void loop(){
+  
 
   file = SD.open(fileName, FILE_WRITE);
   //constantly declaring the values for Accelerometer
@@ -78,6 +82,12 @@ void loop(){
       file.println();
   
   // Print out scaled X,Y,Z accelerometer readings
+      Serial.print(F("X: ")); Serial.print(scaledX); Serial.println(F(" g"));
+      Serial.print(F("Y: ")); Serial.print(scaledY); Serial.println(F(" g"));
+      Serial.print(F("Z: ")); Serial.print(scaledZ); Serial.println(F(" g"));
+      Serial.println();
+      delay(500);
+      
       file.print(F("X: ")); file.print(scaledX); file.println(F(" g"));
       file.print(F("Y: ")); file.print(scaledY); file.println(F(" g"));
       file.print(F("Z: ")); file.print(scaledZ); file.println(F(" g"));
@@ -96,9 +106,18 @@ void loop(){
       altitude = altimeter.readAltitude(); //returns a float with meters above sea level. Ex: 1638.94
       alt = altitude;
 
+      previousAltitude = currentAltitude;
+      currentAltitude = altitude;
+
+      Serial.print(F("Current: "));Serial.println(currentAltitude);
+      Serial.print(F("Previous: "));Serial.println(previousAltitude);
+
+      if(currentAltitude + 3 < previousAltitude){
+        Serial.print("Deploy"); 
+      }
       
       sprintf(pastring, "%3d", alt);
-
+          
       file.print(F("Altitude: "));
       file.print(alt);
 
