@@ -36,7 +36,7 @@
 
 void setup() 
 {
-    Serial.begin(9600);
+//    Serial.begin(9600);
     Wire.begin();        // Join i2c bus
     
     file = SD.open(fileName);
@@ -82,11 +82,11 @@ void loop(){
       file.println();
   
   // Print out scaled X,Y,Z accelerometer readings
-      Serial.print(F("X: ")); Serial.print(scaledX); Serial.println(F(" g"));
-      Serial.print(F("Y: ")); Serial.print(scaledY); Serial.println(F(" g"));
-      Serial.print(F("Z: ")); Serial.print(scaledZ); Serial.println(F(" g"));
-      Serial.println();
-      delay(500);
+//      Serial.print(F("X: ")); Serial.print(scaledX); Serial.println(F(" g"));
+//      Serial.print(F("Y: ")); Serial.print(scaledY); Serial.println(F(" g"));
+//      Serial.print(F("Z: ")); Serial.print(scaledZ); Serial.println(F(" g"));
+//      Serial.println();
+//      delay(500);
       
       file.print(F("X: ")); file.print(scaledX); file.println(F(" g"));
       file.print(F("Y: ")); file.print(scaledY); file.println(F(" g"));
@@ -109,8 +109,8 @@ void loop(){
       previousAltitude = currentAltitude;
       currentAltitude = altitude;
 
-      Serial.print(F("Current: "));Serial.println(currentAltitude);
-      Serial.print(F("Previous: "));Serial.println(previousAltitude);
+//      Serial.print(F("Current: "));Serial.println(currentAltitude);
+//      Serial.print(F("Previous: "));Serial.println(previousAltitude);
 
       if(currentAltitude + 3 < previousAltitude){
         Serial.print("Deploy"); 
