@@ -14,6 +14,7 @@
   float currentAltitude;
   float previousAltitude;
   float initialHeight;
+  float failSafe;
   int ipress;
   int itemp;
   int temp;
@@ -113,15 +114,16 @@ void loop(){
 
       previousAltitude = currentAltitude;
       currentAltitude = altitude;
+      failSafe = currentAltitude - initialHeight;
       
 
       Serial.print(F("Current: "));Serial.println(currentAltitude);
       Serial.print(F("Previous: "));Serial.println(previousAltitude);
-      Serial.print(F("FailCheck: ")); Serial.print(initialHeight - currentAltitude);
+      Serial.print(F("FailCheck: ")); Serial.print(failSafe);
       Serial.println();
 
 
-      if(currentAltitude + 1 < previousAltitude && currentAltitude - initialHeight > 61){
+      if(currentAltitude + 1 < previousAltitude && failSafe > 61){  //There is a +1 so the parachute won't deploy because of noise
         Serial.println("Deploy");
         digitalWrite(explosiveCharge, HIGH);  
       }else{
