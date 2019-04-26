@@ -13,6 +13,7 @@
   float altitude;
   float currentAltitude;
   float previousAltitude;
+  float initialHeight;
   int ipress;
   int itemp;
   int temp;
@@ -29,29 +30,30 @@
   File file;
   char fileName[] = "data.txt"; // SD library only supports up to 8.3 names
   const uint8_t chipSelect = 8;
-
-  bool alreadyBegan = false;  // SD.begin() misbehaves if not first call
-
+  
 
 
 void setup() 
 {
-//    Serial.begin(9600);
+    Serial.begin(9600);
     Wire.begin();        // Join i2c bus
     
     file = SD.open(fileName);
     SD.begin(chipSelect);
+    
     altimeter.begin(); // Get sensor online
     altimeter.setModeAltimeter(); // Measure pressure in Pascals from 20 to 110 kPa
     altimeter.setOversampleRate(7); // Set Oversample to the recommended 128
     altimeter.enableEventFlags(); // Enable all three pressure and temp event flags 
-    //altimeter.setModeActive(); //starts taking measurements!
     
     //If the data file doesn't already exist, just make sure to create it.
     file = SD.open(fileName, FILE_WRITE);
     file.close();
-}
 
+    initialHeight = altimeter.readAltitude();
+    Serial.println("Initial Height: ");Serial.print(initialHeight);
+     
+}
 void loop(){
   
 
@@ -108,18 +110,22 @@ void loop(){
 
       previousAltitude = currentAltitude;
       currentAltitude = altitude;
+      
 
-//      Serial.print(F("Current: "));Serial.println(currentAltitude);
-//      Serial.print(F("Previous: "));Serial.println(previousAltitude);
+      Serial.print(F("Current: "));Serial.println(currentAltitude);
+      Serial.print(F("Previous: "));Serial.println(previousAltitude);
+      Serial.print(F("FailCheck: ")); Serial.print(initialHeight - currentAltitude);
+      Serial.println();
 
-      if(currentAltitude + 3 < previousAltitude){
-        Serial.print("Deploy"); 
+
+      if(currentAltitude + 1 < previousAltitude && currentAltitude - initialHeight > 61){
+        Serial.println("Deploy"); 
       }
       
       sprintf(pastring, "%3d", alt);
           
-      file.print(F("Altitude: "));
-      file.print(alt);
+      file.print(F("Current Altitude: "));
+      file.print(currentAltitude);
 
       file.println();
 
