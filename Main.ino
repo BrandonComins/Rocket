@@ -31,7 +31,8 @@
   char fileName[] = "data.txt"; // SD library only supports up to 8.3 names
   const uint8_t chipSelect = 8;
   
-
+  //Explosive Charge
+    int explosiveCharge = 6; //this is the pin number
 
 void setup() 
 {
@@ -52,6 +53,8 @@ void setup()
 
     initialHeight = altimeter.readAltitude();
     Serial.println("Initial Height: ");Serial.print(initialHeight);
+
+    pinMode(explosiveCharge, OUTPUT);
      
 }
 void loop(){
@@ -119,7 +122,10 @@ void loop(){
 
 
       if(currentAltitude + 1 < previousAltitude && currentAltitude - initialHeight > 61){
-        Serial.println("Deploy"); 
+        Serial.println("Deploy");
+        digitalWrite(explosiveCharge, HIGH);  
+      }else{
+        digitalWrite(explosiveCharge, LOW);
       }
       
       sprintf(pastring, "%3d", alt);
