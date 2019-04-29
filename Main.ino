@@ -33,11 +33,11 @@
   const uint8_t chipSelect = 8;
   
   //Explosive Charge
-    int explosiveCharge = 6; //this is the pin number
+    int explosiveCharge = 7; //this is the pin number
 
 void setup() 
 {
-    Serial.begin(9600);
+//    Serial.begin(9600);
     Wire.begin();        // Join i2c bus
     
     file = SD.open(fileName);
@@ -53,7 +53,7 @@ void setup()
     file.close();
 
     initialHeight = altimeter.readAltitude();
-    Serial.println("Initial Height: ");Serial.print(initialHeight);
+//    Serial.println("Initial Height: ");Serial.print(initialHeight);
 
     pinMode(explosiveCharge, OUTPUT);
      
@@ -63,9 +63,9 @@ void loop(){
 
   file = SD.open(fileName, FILE_WRITE);
   //constantly declaring the values for Accelerometer
-    int rawX = analogRead(A0);
+    int rawX = analogRead(A2);
     int rawY = analogRead(A1);
-    int rawZ = analogRead(A2); 
+    int rawZ = analogRead(A0); 
     float scaledX, scaledY, scaledZ;
      
         if (micro_is_5V) // Microcontroller runs off 5V
@@ -88,17 +88,13 @@ void loop(){
       file.println();
   
   // Print out scaled X,Y,Z accelerometer readings
-//      Serial.print(F("X: ")); Serial.print(scaledX); Serial.println(F(" g"));
-//      Serial.print(F("Y: ")); Serial.print(scaledY); Serial.println(F(" g"));
-//      Serial.print(F("Z: ")); Serial.print(scaledZ); Serial.println(F(" g"));
-//      Serial.println();
-//      delay(500);
+
       
       file.print(F("X: ")); file.print(scaledX); file.println(F(" g"));
       file.print(F("Y: ")); file.print(scaledY); file.println(F(" g"));
       file.print(F("Z: ")); file.print(scaledZ); file.println(F(" g"));
       file.println();
-      delay(500);
+      delay(200);
         
   //Altimeter
       pressure = altimeter.readPressure();
@@ -117,14 +113,14 @@ void loop(){
       failSafe = currentAltitude - initialHeight;
       
 
-      Serial.print(F("Current: "));Serial.println(currentAltitude);
-      Serial.print(F("Previous: "));Serial.println(previousAltitude);
-      Serial.print(F("FailCheck: ")); Serial.print(failSafe);
-      Serial.println();
+//      Serial.print(F("Current: "));Serial.println(currentAltitude);
+//      Serial.print(F("Previous: "));Serial.println(previousAltitude);
+//      Serial.print(F("FailCheck: ")); Serial.print(failSafe);
+//      Serial.println();
 
 
       if(currentAltitude + 1 < previousAltitude && failSafe > 61){  //There is a +1 so the parachute won't deploy because of noise
-        Serial.println("Deploy");
+        file.println("Deploy");
         digitalWrite(explosiveCharge, HIGH);  
       }else{
         digitalWrite(explosiveCharge, LOW);
@@ -152,7 +148,7 @@ void loop(){
 
       file.println();
       file.close();
-      delay(500);
+      delay(200);
           }
 
     float mapf(float x, float in_min, float in_max, float out_min, float out_max)
