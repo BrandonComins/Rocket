@@ -29,7 +29,7 @@
 
   //SD Card Reader
   File file;
-  char fileName[] = "data.txt"; // SD library only supports up to 8.3 names
+  char fileName[] = "data.txt";
   const uint8_t chipSelect = 8;
   
   //Explosive Charge
@@ -59,9 +59,8 @@ void setup()
      file.println(F("rawX,rawY,rawZ,scaledX,scaledY,scaledZ, currentAltitude, preassure, temperature,failCheck"));
      file.println();
      file.println(F("Initial Height: "));file.print(initialHeight);
-     file.println();
-     file.println();    
-
+     file.println(); file.println(); 
+      
      file.close();
      
 }
@@ -109,7 +108,7 @@ void loop(){
      
       file.println();
 
-      altitude = altimeter.readAltitude(); //returns a float with meters above sea level. Ex: 1638.94
+      altitude = altimeter.readAltitude(); 
       alt = altitude;
 
       previousAltitude = currentAltitude;
@@ -138,9 +137,9 @@ void loop(){
     
        if(currentAltitude + 1 < previousAltitude && failCheck > 70){  //There is a +1 so the parachute won't deploy because of noise
         file.println("Deploy");
-        digitalWrite(explosiveCharge, HIGH);  
+        digitalWrite(explosiveCharge, HIGH);  //Turns on voltage for thar pin
       }else{
-        digitalWrite(explosiveCharge, LOW);
+        digitalWrite(explosiveCharge, LOW); //Turns off voltage from that pin
       }
 
       file.print(failCheck);
