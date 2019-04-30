@@ -14,7 +14,7 @@
   float currentAltitude;
   float previousAltitude;
   float initialHeight;
-  float failSafe;
+  float failCheck;
   int ipress;
   int itemp;
   int temp;
@@ -37,7 +37,7 @@
 
 void setup() 
 {
-//    Serial.begin(9600);
+//  Serial.begin(9600);
     Wire.begin();        // Join i2c bus
     
     file = SD.open(fileName);
@@ -50,12 +50,19 @@ void setup()
     
     //If the data file doesn't already exist, just make sure to create it.
     file = SD.open(fileName, FILE_WRITE);
-    file.close();
+    
 
     initialHeight = altimeter.readAltitude();
-//    Serial.println("Initial Height: ");Serial.print(initialHeight);
-
     pinMode(explosiveCharge, OUTPUT);
+
+//   Serial.println("Initial Height: ");Serial.print(initialHeight);
+     file.println(F("rawX,rawY,rawZ,scaledX,scaledY,scaledZ, currentAltitude, preassure, temperature,failCheck"));
+     file.println();
+     file.println(F("Initial Height: "));file.print(initialHeight);
+     file.println();
+     file.println();    
+
+     file.close();
      
 }
 void loop(){
@@ -82,19 +89,16 @@ void loop(){
   }
 
      // Print out raw X,Y,Z accelerometer readings
-      file.print(F("X: ")); file.println(rawX);
-      file.print(F("Y: ")); file.println(rawY);
-      file.print(F("Z: ")); file.println(rawZ);
-      file.println();
+      file.print(rawX); file.print(",");
+      file.print(rawY); file.print(",");
+      file.print(rawZ); file.print(",");
   
   // Print out scaled X,Y,Z accelerometer readings
 
       
-      file.print(F("X: ")); file.print(scaledX); file.println(F(" g"));
-      file.print(F("Y: ")); file.print(scaledY); file.println(F(" g"));
-      file.print(F("Z: ")); file.print(scaledZ); file.println(F(" g"));
-      file.println();
-      delay(200);
+      file.print(scaledX); file.print(F(","));
+      file.print(scaledY); file.print(F(","));
+      file.print(scaledZ); file.print(F(","));
         
   //Altimeter
       pressure = altimeter.readPressure();
@@ -110,45 +114,43 @@ void loop(){
 
       previousAltitude = currentAltitude;
       currentAltitude = altitude;
-      failSafe = currentAltitude - initialHeight;
+      failCheck = currentAltitude - initialHeight;
       
 
 //      Serial.print(F("Current: "));Serial.println(currentAltitude);
 //      Serial.print(F("Previous: "));Serial.println(previousAltitude);
-//      Serial.print(F("FailCheck: ")); Serial.print(failSafe);
+//      Serial.print(F("FailCheck: ")); Serial.print(failCheck);
 //      Serial.println();
+      
+      sprintf(pastring, "%3d", alt);
+          
+      
+      file.print(currentAltitude); file.print(F(","));
 
+      file.print(pastring); file.print(F(","));
+    
+      temperature = altimeter.readTempF();
+      itemp = temperature;
+      sprintf(tmpstring, "%3d", itemp);  
 
-      if(currentAltitude + 1 < previousAltitude && failSafe > 61){  //There is a +1 so the parachute won't deploy because of noise
+     
+      file.print(temperature, 2); file.print(F(","));
+    
+       if(currentAltitude + 1 < previousAltitude && failCheck > 70){  //There is a +1 so the parachute won't deploy because of noise
         file.println("Deploy");
         digitalWrite(explosiveCharge, HIGH);  
       }else{
         digitalWrite(explosiveCharge, LOW);
       }
+
+      file.print(failCheck);
+      file.println();
+      file.println();
       
-      sprintf(pastring, "%3d", alt);
-          
-      file.print(F("Current Altitude: "));
-      file.print(currentAltitude);
-
-      file.println();
-
-      file.print(F("Pressure(Pa): "));
-      file.print(pastring);
-    
-      file.println();
-        
-      temperature = altimeter.readTempF();
-      itemp = temperature;
-      sprintf(tmpstring, "%3d", itemp);  
-
-      file.print(F(" Temp(f): "));
-      file.print(temperature, 2);
-    
-
-      file.println();
       file.close();
+      
       delay(200);
+      
           }
 
     float mapf(float x, float in_min, float in_max, float out_min, float out_max)
