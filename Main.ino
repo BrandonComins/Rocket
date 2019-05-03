@@ -54,6 +54,7 @@ void setup()
 
     initialHeight = altimeter.readAltitude();
     pinMode(explosiveCharge, OUTPUT);
+    digitalWrite(explosiveCharge, LOW); //Turns off voltage from that pin  
 
 //   Serial.println("Initial Height: ");Serial.print(initialHeight);
      file.println(F("rawX,rawY,rawZ,scaledX,scaledY,scaledZ, currentAltitude, preassure, temperature,failCheck"));
@@ -105,9 +106,6 @@ void loop(){
 
       sprintf(pastring, "%3d", ipress);
     
-     
-      file.println();
-
       altitude = altimeter.readAltitude(); 
       alt = altitude;
 
@@ -117,9 +115,9 @@ void loop(){
       
 
 //      Serial.print(F("Current: "));Serial.println(currentAltitude);
-//      Serial.print(F("Previous: "));Serial.println(previousAltitude);
-//      Serial.print(F("FailCheck: ")); Serial.print(failCheck);
-//      Serial.println();
+//   Serial.print(F("Previous: "));Serial.println(previousAltitude);
+//     Serial.print(F("FailCheck: ")); Serial.print(failCheck);
+//     Serial.println();
       
       sprintf(pastring, "%3d", alt);
           
@@ -135,12 +133,16 @@ void loop(){
      
       file.print(temperature, 2); file.print(F(","));
     
-       if(currentAltitude + 1 < previousAltitude && failCheck > 70){  //There is a +1 so the parachute won't deploy because of noise
+       if(currentAltitude + .8 < previousAltitude && failCheck > 70 ){  //There is a +1 so the parachute won't deploy because of noise
+
+//        if(currentAltitude != previousAltitude){
+//        Serial.print("DEPLOY");
         file.println("Deploy");
         digitalWrite(explosiveCharge, HIGH);  //Turns on voltage for thar pin
-      }else{
-        digitalWrite(explosiveCharge, LOW); //Turns off voltage from that pin
       }
+
+
+      
 
       file.print(failCheck);
       file.println();
