@@ -62,8 +62,9 @@ void setup()
    * Use the serial monitor to debug things.
    * This gives you live data, but your arduino 
    * has to be plugged in or connected via bluetooth
+   * Open the Serial Monitor with Ctrl+Shift+M
    */
-//  Serial.begin(9600); 
+//  Serial.begin(9600);  
     Wire.begin();        // Join i2c bus
     
     file = SD.open(fileName); //opens file on SD card
