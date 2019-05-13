@@ -1,4 +1,4 @@
-If you are here and not from my High School I will be reall surprised.
+If you are here and not from my high school I will be really surprised.
 
 This is the code for a rocket flight computer I made for my high school physics class in 2019.
 
